@@ -7,17 +7,17 @@ import (
 )
 
 func main() {
-	err := run()
+	sourceDirectory := "/Users/simon/dev/private/fsync/testSrcDir/"
+	targetDirectory := "/Users/simon/dev/private/fsync/testTargetDir/"
+
+	err := fileSync(sourceDirectory, targetDirectory)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		fmt.Fprintf(os.Stderr, "error: %v\n", err)
 		os.Exit(1)
 	}
 }
 
-func run() error {
-	sourceDirectory := "/Users/simon/dev/private/fsync/testSrcDir/"
-	targetDirectory := "/Users/simon/dev/private/fsync/testTargetDir/"
-
+func fileSync(sourceDirectory string, targetDirectory string) error {
 	exists, err := validateDirectory(sourceDirectory)
 	if err != nil {
 		return fmt.Errorf("failed to validate source directory %q: %w", sourceDirectory, err)
@@ -62,9 +62,8 @@ func validateDirectory(path string) (bool, error) {
 
 	if info.IsDir() {
 		return true, nil
-	} else {
-		return false, nil
 	}
+	return false, nil
 }
 
 func copyFile(srcFile string, targetFile string) error {
