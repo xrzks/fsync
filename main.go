@@ -18,16 +18,29 @@ func run() error {
 	sourceDirectory := "/Users/simon/dev/private/fsync/testSrcDir/"
 	targetDirectory := "/Users/simon/dev/private/fsync/testTargetDir/"
 
+	exists, err := validateDirectory(sourceDirectory)
+	if err != nil {
+		return fmt.Errorf("failed to validate source directory %q: %w", sourceDirectory, err)
+	}
+	if !exists {
+		return fmt.Errorf("source directory %q does not exist", sourceDirectory)
+	}
+	exists, err = validateDirectory(targetDirectory)
+	if err != nil {
+		return fmt.Errorf("failed to validate target directory %q: %w", targetDirectory, err)
+	}
+	if !exists {
+		return fmt.Errorf("target directory %q does not exist", targetDirectory)
+	}
+
 	sourceEntries, err := os.ReadDir(sourceDirectory)
 	if err != nil {
 		return fmt.Errorf("failed to read source directory %q: %w", sourceDirectory, err)
 	}
 
-	for index, sourceEntry := range sourceEntries {
+	for _, sourceEntry := range sourceEntries {
 		sourceFilePath := sourceDirectory + sourceEntry.Name()
 		targetFilePath := targetDirectory + sourceEntry.Name()
-
-		fmt.Printf("%d 󰉋  %s\n", index, sourceFilePath)
 
 		err = copyFile(sourceFilePath, targetFilePath)
 		if err != nil {
@@ -38,7 +51,23 @@ func run() error {
 	return nil
 }
 
-func copyFile(srcFile, targetFile string) error {
+func validateDirectory(path string) (bool, error) {
+	info, err := os.Stat(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false, nil
+		}
+		return false, err
+	}
+
+	if info.IsDir() {
+		return true, nil
+	} else {
+		return false, nil
+	}
+}
+
+func copyFile(srcFile string, targetFile string) error {
 	// open source file
 	sourceFile, err := os.Open(srcFile)
 	if err != nil {
